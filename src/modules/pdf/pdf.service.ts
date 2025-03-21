@@ -13,7 +13,7 @@ import PDFDocument from 'pdfkit';
 import JsBarcode from 'jsbarcode';
 import { createCanvas } from 'canvas';
 import * as fs from 'fs';
-import { generateBarcode, generateQRCode } from 'src/common/util/generateBarCode';
+import { generateBarcode, generateQRCode } from '../../common/util/generateBarCode';
 
 
 @Injectable()
