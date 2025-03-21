@@ -3,8 +3,10 @@ import { ShortBaseDto } from 'src/common/dtos';
 import { Gender } from 'src/domain/enums';
 import { SerializerPractitionerRoleDto } from '../practitioner-role/practitioner-role-serializer.dto';
 import { SerializerSocialWorkEnrollmentDto } from '../social-work-enrollment/social-work-enrollment-serializer.dto';
-import { SerializerLocationDto } from '../location/Location-serializer.dto';
-import { SerializerAppointmentDto } from '../appointment/Appointment-serializer.dto';
+//import { SerializerLocationDto } from '../location/Location-serializer.dto';
+//import { SerializerAppointmentDto } from '../appointment/Appointment-serializer.dto';
+import { SerializerLocationDto } from '../location/location-serializer.dto';
+import { SerializerAppointmentDto } from '../appointment/appointment-serializer.dto';
 
 export class PractitionerRequestDto
    extends ShortBaseDto
