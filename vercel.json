@@ -1,0 +1,32 @@
+{
+
+  "version": 2, 
+
+      "builds": [
+  
+        {
+
+            "src": "dist/main.js",
+            "use": "@vercel/node"
+  
+        }
+  
+    ],
+
+  "installCommand": "npm i && npm i @nestjs/core && npm install -g @nestjs/cli && npm install --save-dev @types/express && npm i @nestjs/platform-express && npm i express && npm i multer && npm i --save-dev @types/multer",
+
+  "routes": [
+
+      {
+
+          "src": "/api/(.*)",
+
+          "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+
+          "dest": "dist/main.ts"
+
+      }
+
+  ]
+
+}
