@@ -29,7 +29,8 @@ export class PdfService {
     //------------------------------------------------Receta FUllSALUD-------------------------------------
     const prescription = await this.medicationRequestRepository.findOne({
       where: { id: createPdfDto.medicationRequestId },
-      relations: ['practitioner', 'patient', 'medicines', 'practitioner.specialities', 'practitioner.location'],
+      relations: ['practitioner', 'patient', 'medicines'//, 'practitioner.specialities', 'practitioner.location'
+                  ],
         // 'patient.socialWork'],
     });
     console.log("prescription", prescription)
