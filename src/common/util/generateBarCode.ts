@@ -15,7 +15,8 @@ export async function generateBarcode(code: string, format: string, outputPath: 
         });
         const buffer = canvas.toBuffer('image/png');
         fs.writeFileSync(tempPath, buffer);
-        console.log(`Código de barras generado en: ${tempPath}`);
+        console.log(fs.existsSync(tempPath))
+        console.log(`Código de barras generado en: ${tempPath}`)
         return tempPath; // Devuelve la ruta de salida
     } catch (error) {
         console.error('Error al generar el código de barras:', error);

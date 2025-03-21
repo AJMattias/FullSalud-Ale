@@ -397,7 +397,7 @@ async createPdfIndicaciones(createPdfDto: CreatePdfDto):Promise<Buffer> {
   console.log('url imagen afiliadoBarCodeUrl: ', afiliadoBarCodeUrl)
 
   //qrcode imagen
-  const outputFileQrPath = `qrcode.png-${prescription.id}`;
+  const outputFileQrPath = `qrcode-${prescription.id}.png`;
   const qrCodePath = await generateQRCode(prescription.id, outputFileQrPath);
 
   const pdfBuffer: Buffer = await new Promise((resolve) => {
