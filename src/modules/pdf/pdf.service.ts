@@ -55,7 +55,7 @@ export class PdfService {
 
      //receta bar code
   const codeToEncode = prescription.id;
-  const barcodeFormat = 'CODE128';
+  const barcodeFormat = 'code128';
   const prescriptionBarCodeBuffer = await generateBarcodeBuffer(codeToEncode, barcodeFormat);
 
   //afiliado bar code
