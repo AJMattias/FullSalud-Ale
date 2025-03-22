@@ -13,7 +13,7 @@ import PDFDocument from 'pdfkit';
 import JsBarcode from 'jsbarcode';
 import { createCanvas } from 'canvas';
 import * as fs from 'fs';
-import { generateBarcode, generateQRCode } from '../../common/util/generateBarCode';
+import { generateBarcode, generateBarcodeBuffer, generateQRCode, generateQRCodeBuffer } from '../../common/util/generateBarCode';
 
 
 @Injectable()
@@ -36,22 +36,35 @@ export class PdfService {
     console.log("prescription", prescription)
 
     //receta bar code
-    const codeToEncode = prescription.id;
-    const barcodeFormat = 'CODE128'; // O 'CODE39'
-    const outputFilePath = `${prescription.patient.name}-${prescription.patient.lastName}.png`;
-    const prescriptionBarCodeUrl = await generateBarcode(codeToEncode, barcodeFormat, outputFilePath);
-    console.log('url imagen prescripcion barcode: ', prescriptionBarCodeUrl)
+    // const codeToEncode = prescription.id;
+    // const barcodeFormat = 'CODE128'; // O 'CODE39'
+    // const outputFilePath = `${prescription.patient.name}-${prescription.patient.lastName}.png`;
+    // const prescriptionBarCodeUrl = await generateBarcode(codeToEncode, barcodeFormat, outputFilePath);
+    // console.log('url imagen prescripcion barcode: ', prescriptionBarCodeUrl)
 
     //afiliado bar code
-    const codeToEncodeA = prescription.patient.id;
+    //const codeToEncodeA = prescription.patient.id;
     //const barcodeFormat = 'CODE128'; // O 'CODE39'
-    const outputFilePathAfiliado = `afiliado-${prescription.patient.name}-${prescription.patient.lastName}.png`;
-    const afiliadoBarCodeUrl = await generateBarcode(codeToEncode, barcodeFormat, outputFilePathAfiliado);
-    console.log('url imagen afiliadoBarCodeUrl: ', afiliadoBarCodeUrl)
+    // const outputFilePathAfiliado = `afiliado-${prescription.patient.name}-${prescription.patient.lastName}.png`;
+    // const afiliadoBarCodeUrl = await generateBarcode(codeToEncode, barcodeFormat, outputFilePathAfiliado);
+    // console.log('url imagen afiliadoBarCodeUrl: ', afiliadoBarCodeUrl)
 
     //qrcode imagen
-    const outputFileQrPath = `qrcode.png-${prescription.id}`;
-    const qrCodePath = await generateQRCode(prescription.id, outputFileQrPath);
+    // const outputFileQrPath = `qrcode.png-${prescription.id}`;
+    // const qrCodePath = await generateQRCode(prescription.id, outputFileQrPath);
+
+     //receta bar code
+  const codeToEncode = prescription.id;
+  const barcodeFormat = 'CODE128';
+  const prescriptionBarCodeBuffer = await generateBarcodeBuffer(codeToEncode, barcodeFormat);
+
+  //afiliado bar code
+  const codeToEncodeA = prescription.patient.id;
+  const afiliadoBarCodeBuffer = await generateBarcodeBuffer(codeToEncodeA, barcodeFormat);
+
+  //qrcode imagen
+  const outputFileQrPath = `qrcode-${prescription.id}.png`;
+  const qrCodePath = await generateQRCodeBuffer(prescription.id);
 
     const pdfBuffer: Buffer = await new Promise((resolve) => {
       const doc = new PDFDocument({
@@ -78,10 +91,10 @@ export class PdfService {
       doc.font('Helvetica-Bold').fontSize(16).fillColor('black');
       doc.text('Recetario:', 16, 144);
       //imagen
-      doc.image(join(process.cwd(), `${prescriptionBarCodeUrl}`), 10, 174, { width: 240 })
+      doc.image(join(process.cwd(), `${prescriptionBarCodeBuffer}`), 10, 174, { width: 240 })
       const widthNroAfiliado = doc.page.width / 2 + doc.page.width / 5
       doc.text('Nro afiliado:', widthNroAfiliado , 144);
-      doc.image(join(process.cwd(), `${afiliadoBarCodeUrl}`), 343, 174, { width: 240 })
+      doc.image(join(process.cwd(), `${afiliadoBarCodeBuffer}`), 343, 174, { width: 240 })
 
       const fecha = new Date(prescription.createdAt);
       const dia = fecha.getDate().toString().padStart(2, '0');

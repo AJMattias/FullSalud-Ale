@@ -2,6 +2,7 @@ import JsBarcode from 'jsbarcode';
 import { createCanvas } from 'canvas';
 import * as QRCode from 'qrcode';
 import * as fs from 'fs';
+import * as bwipjs from 'bwip-js';
 
 export async function generateBarcode(code: string, format: string, outputPath: string): Promise<string> {
     try {
@@ -39,3 +40,30 @@ export async function generateQRCode(data: string, outputPath: string): Promise<
       throw error;
     }
   }
+
+  export async function generateBarcodeBuffer(codeToEncode, barcodeFormat) {
+    try {
+      const png = await bwipjs.toBuffer({
+        bcid: barcodeFormat,
+        text: codeToEncode,
+        scale: 3,
+        height: 10,
+        includetext: true,
+        textxalign: 'center',
+      });
+      return png;
+    } catch (error) {
+      console.error('Error generating barcode:', error);
+      throw error;
+    }
+  }
+
+  export async function generateQRCodeBuffer(text) {
+    try {
+    const qrCodeBuffer = await QRCode.toBuffer(text, { type: 'png' });
+    return qrCodeBuffer;
+    } catch (error) {
+    console.error('Error generating QR code:', error);
+    throw error;
+    }
+    }
