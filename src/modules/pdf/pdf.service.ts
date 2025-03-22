@@ -76,13 +76,13 @@ export class PdfService {
       doc.addPage();
 
       // Franja gris de fondo
-      doc.rect(0, 0, doc.page.width, 108).fill('#D3D3D3');
+      // doc.rect(0, 0, doc.page.width, 108).fill('#D3D3D3');
 
-      // Título "Receta Electrónica"
-      doc.fillColor('black').fontSize(24).font('Helvetica-Bold').text('Receta Electrónica', doc.page.width / 3, 40);
+      // // Título "Receta Electrónica"
+      // doc.fillColor('black').fontSize(24).font('Helvetica-Bold').text('Receta Electrónica', doc.page.width / 3, 40);
 
-      //linea separadora
-      doc.rect(0, 108, doc.page.width, 3).fill('#A7A7A7'); 
+      // //linea separadora
+      // doc.rect(0, 108, doc.page.width, 3).fill('#A7A7A7'); 
 
       //logo
       doc.image(join(process.cwd(), 'uploads/logo.png'), doc.page.width / 2-50, 135, { width: 100 });
@@ -396,22 +396,35 @@ async createPdfIndicaciones(createPdfDto: CreatePdfDto):Promise<Buffer> {
   console.log("prescription", prescription)
 
   //receta bar code
+  // const codeToEncode = prescription.id;
+  // const barcodeFormat = 'CODE128'; // O 'CODE39'
+  // const outputFilePath = `${prescription.patient.name}-${prescription.patient.lastName}.png`;
+  // const prescriptionBarCodeUrl = await generateBarcode(codeToEncode, barcodeFormat, outputFilePath);
+  // console.log('url imagen prescripcion barcode: ', prescriptionBarCodeUrl)
+
+  //afiliado bar code
+  //const codeToEncodeA = prescription.patient.id;
+  //const barcodeFormat = 'CODE128'; // O 'CODE39'
+  // const outputFilePathAfiliado = `afiliado-${prescription.patient.name}-${prescription.patient.lastName}.png`;
+  // const afiliadoBarCodeUrl = await generateBarcode(codeToEncode, barcodeFormat, outputFilePathAfiliado);
+  // console.log('url imagen afiliadoBarCodeUrl: ', afiliadoBarCodeUrl)
+
+  //qrcode imagen
+  // const outputFileQrPath = `qrcode-${prescription.id}.png`;
+  // const qrCodePath = await generateQRCode(prescription.id, outputFileQrPath);
+
+  //receta bar code
   const codeToEncode = prescription.id;
-  const barcodeFormat = 'CODE128'; // O 'CODE39'
-  const outputFilePath = `${prescription.patient.name}-${prescription.patient.lastName}.png`;
-  const prescriptionBarCodeUrl = await generateBarcode(codeToEncode, barcodeFormat, outputFilePath);
-  console.log('url imagen prescripcion barcode: ', prescriptionBarCodeUrl)
+  const barcodeFormat = 'code128';
+  const prescriptionBarCodeBuffer = await generateBarcodeBuffer(codeToEncode, barcodeFormat);
 
   //afiliado bar code
   const codeToEncodeA = prescription.patient.id;
-  //const barcodeFormat = 'CODE128'; // O 'CODE39'
-  const outputFilePathAfiliado = `afiliado-${prescription.patient.name}-${prescription.patient.lastName}.png`;
-  const afiliadoBarCodeUrl = await generateBarcode(codeToEncode, barcodeFormat, outputFilePathAfiliado);
-  console.log('url imagen afiliadoBarCodeUrl: ', afiliadoBarCodeUrl)
+  const afiliadoBarCodeBuffer = await generateBarcodeBuffer(codeToEncodeA, barcodeFormat);
 
   //qrcode imagen
   const outputFileQrPath = `qrcode-${prescription.id}.png`;
-  const qrCodePath = await generateQRCode(prescription.id, outputFileQrPath);
+  const qrCodePath = await generateQRCodeBuffer(prescription.id);
 
   const pdfBuffer: Buffer = await new Promise((resolve) => {
     const doc = new PDFDocument({
@@ -422,14 +435,14 @@ async createPdfIndicaciones(createPdfDto: CreatePdfDto):Promise<Buffer> {
 
     doc.addPage();
 
-    // Franja gris de fondo
-    doc.rect(0, 0, doc.page.width, 108).fill('#D3D3D3');
+    // // Franja gris de fondo
+    // doc.rect(0, 0, doc.page.width, 108).fill('#D3D3D3');
 
-    // Título "Receta Electrónica"
-    doc.fillColor('black').fontSize(24).font('Helvetica-Bold').text('Receta Electrónica', doc.page.width / 3, 40);
+    // // Título "Receta Electrónica"
+    // doc.fillColor('black').fontSize(24).font('Helvetica-Bold').text('Receta Electrónica', doc.page.width / 3, 40);
 
-    //linea separadora
-    doc.rect(0, 108, doc.page.width, 3).fill('#A7A7A7'); 
+    // //linea separadora
+    // doc.rect(0, 108, doc.page.width, 3).fill('#A7A7A7'); 
 
     //logo
     doc.image(join(process.cwd(), 'uploads/logo.png'), doc.page.width / 2-50, 135, { width: 100 });
@@ -438,10 +451,10 @@ async createPdfIndicaciones(createPdfDto: CreatePdfDto):Promise<Buffer> {
     doc.font('Helvetica-Bold').fontSize(16).fillColor('black');
     doc.text('Recetario:', 16, 144);
     //imagen
-    doc.image(join(process.cwd(), `${prescriptionBarCodeUrl}`), 10, 174, { width: 240 })
+    doc.image(prescriptionBarCodeBuffer, 10, 174, { width: 240 })
     const widthNroAfiliado = doc.page.width / 2 + doc.page.width / 5
     doc.text('Nro afiliado:', widthNroAfiliado , 144);
-    doc.image(join(process.cwd(), `${afiliadoBarCodeUrl}`), 343, 174, { width: 240 })
+    doc.image(afiliadoBarCodeBuffer, 343, 174, { width: 240 })
 
     const fecha = new Date(prescription.createdAt);
     const dia = fecha.getDate().toString().padStart(2, '0');
@@ -688,15 +701,15 @@ async createPdfIndicaciones(createPdfDto: CreatePdfDto):Promise<Buffer> {
         resolve(data);
 
         // Eliminar las imágenes aquí
-        try {
-            fs.unlinkSync(join(process.cwd(), prescriptionBarCodeUrl));
-            fs.unlinkSync(join(process.cwd(), afiliadoBarCodeUrl));
-            fs.unlinkSync(join(process.cwd(), qrCodePath));
-            console.log('Imágenes eliminadas con éxito.');
-        } catch (err) {
-            console.error('Error al eliminar las imágenes:', err);
-        }
-    });
+        // try {
+        //     fs.unlinkSync(join(process.cwd(), prescriptionBarCodeUrl));
+        //     fs.unlinkSync(join(process.cwd(), afiliadoBarCodeUrl));
+        //     fs.unlinkSync(join(process.cwd(), qrCodePath));
+        //     console.log('Imágenes eliminadas con éxito.');
+        // } catch (err) {
+        //     console.error('Error al eliminar las imágenes:', err);
+        // }
+      });
       
     doc.end()
   })
