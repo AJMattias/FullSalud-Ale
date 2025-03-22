@@ -91,10 +91,10 @@ export class PdfService {
       doc.font('Helvetica-Bold').fontSize(16).fillColor('black');
       doc.text('Recetario:', 16, 144);
       //imagen
-      doc.image(join(process.cwd(), `${prescriptionBarCodeBuffer}`), 10, 174, { width: 240 })
+      doc.image(prescriptionBarCodeBuffer, 10, 174, { width: 240 })
       const widthNroAfiliado = doc.page.width / 2 + doc.page.width / 5
       doc.text('Nro afiliado:', widthNroAfiliado , 144);
-      doc.image(join(process.cwd(), `${afiliadoBarCodeBuffer}`), 343, 174, { width: 240 })
+      doc.image(afiliadoBarCodeBuffer, 343, 174, { width: 240 })
 
       const fecha = new Date(prescription.createdAt);
       const dia = fecha.getDate().toString().padStart(2, '0');
@@ -259,7 +259,7 @@ export class PdfService {
       doc.text('Suiza 678, Ciudad, Mendoza', 28 + doc.widthOfString('Direccion'), 696);
 
       //TODO Codigo qr y frima electronica
-      doc.image(join(process.cwd(), `${qrCodePath}`), 470, 610, { width: 90 })
+      doc.image(qrCodePath, 470, 610, { width: 90 })
 
 
       //texto centrado, receta validarse
