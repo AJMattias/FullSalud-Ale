@@ -561,8 +561,7 @@ async createPdfIndicaciones(createPdfDto: CreatePdfDto):Promise<Buffer> {
     doc.text('Suiza 678, Ciudad, Mendoza', 28 + doc.widthOfString('Direccion'), 696);
 
     //TODO Codigo qr y frima electronica
-    doc.image(join(process.cwd(), `${qrCodePath}`), 470, 610, { width: 90 })
-
+    doc.image(qrCodePath, 470, 610, { width: 90 })
 
     //texto centrado, receta validarse
     doc.font('Helvetica-Bold').fontSize(10).fillColor('#49454F');
