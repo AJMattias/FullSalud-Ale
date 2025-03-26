@@ -103,7 +103,7 @@ export class PdfService {
       const fechaFormateada = `${dia}/${mes}/${año}`;
       // "Fecha Receta:" en negrita
       doc.font('Helvetica-Bold').fontSize(16).fillColor('black');
-      doc.text('Fecha Receta: ', 92, 256);
+      doc.text('Fecha Receta: ', 92, 148);
 
       // Fecha en formato normal
       doc.font('Helvetica').fontSize(16).fillColor('black');
@@ -187,7 +187,7 @@ export class PdfService {
       doc.text(fechaFormateadaFN, dateFechaNac, 218); // Misma coordenada y (314)
         
       //linea separadora
-      doc.rect(11, 289, 563, 2).fill('#C6C6C6'); 
+      doc.rect(11, 275, 563, 2).fill('#C6C6C6'); 
 
       
       // Texto "Diagnostico"
