@@ -66,4 +66,4 @@ export async function generateQRCode(data: string, outputPath: string): Promise<
     console.error('Error generating QR code:', error);
     throw error;
     }
-    }
+  }
