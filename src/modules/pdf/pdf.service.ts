@@ -23,48 +23,30 @@ export class PdfService {
     @InjectRepository(MedicationRequest) protected medicationRequestRepository: Repository<MedicationRequest>,
   ) {}
 
-
   async createPdfReceta(createPdfDto: CreatePdfDto):Promise<Buffer> {
 
     //------------------------------------------------Receta FUllSALUD-------------------------------------
     const prescription = await this.medicationRequestRepository.findOne({
       where: { id: createPdfDto.medicationRequestId },
-      relations: ['practitioner', 'patient', 'medicines'//, 'practitioner.specialities', 'practitioner.location'
-                  ],
+      relations: ['practitioner', 'patient', 'medicines', 'practitioner.specialities'
+        //, 'practitioner.location'],
         // 'patient.socialWork'],
+      ],
     });
     console.log("prescription", prescription)
 
     //receta bar code
-    // const codeToEncode = prescription.id;
-    // const barcodeFormat = 'CODE128'; // O 'CODE39'
-    // const outputFilePath = `${prescription.patient.name}-${prescription.patient.lastName}.png`;
-    // const prescriptionBarCodeUrl = await generateBarcode(codeToEncode, barcodeFormat, outputFilePath);
-    // console.log('url imagen prescripcion barcode: ', prescriptionBarCodeUrl)
+    const codeToEncode = prescription.id;
+    const barcodeFormat = 'code128';
+    const prescriptionBarCodeBuffer = await generateBarcodeBuffer(codeToEncode, barcodeFormat);
 
     //afiliado bar code
-    //const codeToEncodeA = prescription.patient.id;
-    //const barcodeFormat = 'CODE128'; // O 'CODE39'
-    // const outputFilePathAfiliado = `afiliado-${prescription.patient.name}-${prescription.patient.lastName}.png`;
-    // const afiliadoBarCodeUrl = await generateBarcode(codeToEncode, barcodeFormat, outputFilePathAfiliado);
-    // console.log('url imagen afiliadoBarCodeUrl: ', afiliadoBarCodeUrl)
+    const codeToEncodeA = prescription.patient.id;
+    const afiliadoBarCodeBuffer = await generateBarcodeBuffer(codeToEncodeA, barcodeFormat);
 
     //qrcode imagen
-    // const outputFileQrPath = `qrcode.png-${prescription.id}`;
-    // const qrCodePath = await generateQRCode(prescription.id, outputFileQrPath);
-
-     //receta bar code
-  const codeToEncode = prescription.id;
-  const barcodeFormat = 'code128';
-  const prescriptionBarCodeBuffer = await generateBarcodeBuffer(codeToEncode, barcodeFormat);
-
-  //afiliado bar code
-  const codeToEncodeA = prescription.patient.id;
-  const afiliadoBarCodeBuffer = await generateBarcodeBuffer(codeToEncodeA, barcodeFormat);
-
-  //qrcode imagen
-  const outputFileQrPath = `qrcode-${prescription.id}.png`;
-  const qrCodePath = await generateQRCodeBuffer(prescription.id);
+    const outputFileQrPath = `qrcode-${prescription.id}.png`;
+    const qrCodePath = await generateQRCodeBuffer(prescription.id);
 
     const pdfBuffer: Buffer = await new Promise((resolve) => {
       const doc = new PDFDocument({
@@ -76,24 +58,24 @@ export class PdfService {
       doc.addPage();
 
       // Franja gris de fondo
-      // doc.rect(0, 0, doc.page.width, 108).fill('#D3D3D3');
+      //doc.rect(0, 0, doc.page.width, 108).fill('#D3D3D3');
 
-      // // Título "Receta Electrónica"
-      // doc.fillColor('black').fontSize(24).font('Helvetica-Bold').text('Receta Electrónica', doc.page.width / 3, 40);
+      // Título "Receta Electrónica"
+     // doc.fillColor('black').fontSize(24).font('Helvetica-Bold').text('Receta Electrónica', doc.page.width / 3, 40);
 
-      // //linea separadora
-      // doc.rect(0, 108, doc.page.width, 3).fill('#A7A7A7'); 
+      //linea separadora
+      //doc.rect(0, 108, doc.page.width, 3).fill('#A7A7A7'); 
 
       //logo
       doc.image(join(process.cwd(), 'uploads/logo.png'), doc.page.width / 2-50, 27, { width: 100 });
 
       //Recetario y afiliado
       doc.font('Helvetica-Bold').fontSize(16).fillColor('black');
-      doc.text('Recetario:', 16, 36);
+      doc.text('Recetario:', 16, 46);
       //imagen
       doc.image(prescriptionBarCodeBuffer, 10, 66, { width: 240 })
       const widthNroAfiliado = doc.page.width / 2 + doc.page.width / 5
-      doc.text('Nro afiliado:', widthNroAfiliado , 36);
+      doc.text('Nro afiliado:', widthNroAfiliado , 46);
       doc.image(afiliadoBarCodeBuffer, 343, 66, { width: 240 })
 
       const fecha = new Date(prescription.createdAt);
@@ -103,7 +85,7 @@ export class PdfService {
       const fechaFormateada = `${dia}/${mes}/${año}`;
       // "Fecha Receta:" en negrita
       doc.font('Helvetica-Bold').fontSize(16).fillColor('black');
-      doc.text('Fecha Receta: ', 92, 148);
+      doc.text('Fecha Receta: ', 200, 148);
 
       // Fecha en formato normal
       doc.font('Helvetica').fontSize(16).fillColor('black');
@@ -187,7 +169,7 @@ export class PdfService {
       doc.text(fechaFormateadaFN, dateFechaNac, 218); // Misma coordenada y (314)
         
       //linea separadora
-      doc.rect(11, 275, 563, 2).fill('#C6C6C6'); 
+      doc.rect(11, 259, 563, 2).fill('#C6C6C6'); 
 
       
       // Texto "Diagnostico"
@@ -216,7 +198,7 @@ export class PdfService {
       doc.text(`Cantidad:`, 16, 417);
       doc.font('Helvetica').fontSize(12).fillColor('black');
       //prescription.patient.socialWork.name
-      doc.text(`${prescription.medicine_quantity}`, 30 + doc.widthOfString('Cantidad:'), 414);
+      doc.text(`${prescription.medicine_quantity}`, 30 + doc.widthOfString('Cantidad:'), 417);
 
       //linea separadora
       doc.rect(11, 455, 563, 2).fill('#C6C6C6'); 
@@ -272,7 +254,7 @@ export class PdfService {
       doc.font('Helvetica').fontSize(10).fillColor('black');
       doc.text(`La firma electrónica `, 334, 532);
       doc.text(`sustituye legalmente `, 334, 547);
-      doc.text(`firma olografa `, 334, 563);
+      doc.text(`firma olografa `, 334, 562);
       //QR Code
 
       //linea separadora
@@ -361,12 +343,12 @@ export class PdfService {
       addText(`${prescription.medicine_quantity}`, false, false);
 
       //linea separadora
-      doc.rect(201, 815, 173, 2).fill('#C6C6C6'); 
+      doc.rect(201, 707, 173, 2).fill('#C6C6C6'); 
 
       //Emicion receta
       doc.font('Helvetica').fontSize(10).fillColor('black');
-      doc.text(`Esta receta fue creada por un emisor inscripto y validado en el Registro de Recetarios Electrónicos del :`, 50, 840);
-      doc.text(`Ministerio de Salud de la Nación (Resolución RL-2024-91317760-APN-SSVEIYES#MS)`, 70, 860);
+      doc.text(`Esta receta fue creada por un emisor inscripto y validado en el Registro de Recetarios Electrónicos del :`, 50, 732);
+      doc.text(`Ministerio de Salud de la Nación (Resolución RL-2024-91317760-APN-SSVEIYES#MS)`, 70, 752);
 
       //ending pdf
       const buffer =[]
@@ -391,26 +373,27 @@ async createPdfIndicaciones(createPdfDto: CreatePdfDto):Promise<Buffer> {
   const prescription = await this.medicationRequestRepository.findOne({
     where: { id: createPdfDto.medicationRequestId },
     relations: ['practitioner', 'patient', 'medicines', 'practitioner.specialities'],
+      //, 'practitioner.location'],
       // 'patient.socialWork'],
   });
   console.log("prescription", prescription)
 
-  //receta bar code
+  // //receta bar code
   // const codeToEncode = prescription.id;
   // const barcodeFormat = 'CODE128'; // O 'CODE39'
   // const outputFilePath = `${prescription.patient.name}-${prescription.patient.lastName}.png`;
   // const prescriptionBarCodeUrl = await generateBarcode(codeToEncode, barcodeFormat, outputFilePath);
   // console.log('url imagen prescripcion barcode: ', prescriptionBarCodeUrl)
 
-  //afiliado bar code
-  //const codeToEncodeA = prescription.patient.id;
-  //const barcodeFormat = 'CODE128'; // O 'CODE39'
+  // //afiliado bar code
+  // const codeToEncodeA = prescription.patient.id;
+  // //const barcodeFormat = 'CODE128'; // O 'CODE39'
   // const outputFilePathAfiliado = `afiliado-${prescription.patient.name}-${prescription.patient.lastName}.png`;
   // const afiliadoBarCodeUrl = await generateBarcode(codeToEncode, barcodeFormat, outputFilePathAfiliado);
   // console.log('url imagen afiliadoBarCodeUrl: ', afiliadoBarCodeUrl)
 
-  //qrcode imagen
-  // const outputFileQrPath = `qrcode-${prescription.id}.png`;
+  // //qrcode imagen
+  // const outputFileQrPath = `qrcode.png-${prescription.id}`;
   // const qrCodePath = await generateQRCode(prescription.id, outputFileQrPath);
 
   //receta bar code
@@ -428,14 +411,14 @@ async createPdfIndicaciones(createPdfDto: CreatePdfDto):Promise<Buffer> {
 
   const pdfBuffer: Buffer = await new Promise((resolve) => {
     const doc = new PDFDocument({
-      size: [595, 950],
+      size: [595, 842],
       bufferPages: true,
       autoFirstPage: false,
     });
 
     doc.addPage();
 
-    // // Franja gris de fondo
+    // Franja gris de fondo
     // doc.rect(0, 0, doc.page.width, 108).fill('#D3D3D3');
 
     // // Título "Receta Electrónica"
@@ -445,16 +428,16 @@ async createPdfIndicaciones(createPdfDto: CreatePdfDto):Promise<Buffer> {
     // doc.rect(0, 108, doc.page.width, 3).fill('#A7A7A7'); 
 
     //logo
-    doc.image(join(process.cwd(), 'uploads/logo.png'), doc.page.width / 2-50, 135, { width: 100 });
+    doc.image(join(process.cwd(), 'uploads/logo.png'), doc.page.width / 2-50, 27, { width: 100 });
 
     //Recetario y afiliado
     doc.font('Helvetica-Bold').fontSize(16).fillColor('black');
-    doc.text('Recetario:', 16, 144);
+    doc.text('Recetario:', 16, 46);
     //imagen
-    doc.image(prescriptionBarCodeBuffer, 10, 174, { width: 240 })
+    doc.image(prescriptionBarCodeBuffer, 10, 66, { width: 240 })
     const widthNroAfiliado = doc.page.width / 2 + doc.page.width / 5
-    doc.text('Nro afiliado:', widthNroAfiliado , 144);
-    doc.image(afiliadoBarCodeBuffer, 343, 174, { width: 240 })
+    doc.text('Nro afiliado:', widthNroAfiliado , 46);
+    doc.image(afiliadoBarCodeBuffer, 343, 66, { width: 240 })
 
     const fecha = new Date(prescription.createdAt);
     const dia = fecha.getDate().toString().padStart(2, '0');
@@ -463,14 +446,14 @@ async createPdfIndicaciones(createPdfDto: CreatePdfDto):Promise<Buffer> {
     const fechaFormateada = `${dia}/${mes}/${año}`;
     // "Fecha Receta:" en negrita
     doc.font('Helvetica-Bold').fontSize(16).fillColor('black');
-    doc.text('Fecha Receta: ', 200, 256);
+    doc.text('Fecha Receta: ', 200, 148);
 
     // Fecha en formato normal
     doc.font('Helvetica').fontSize(16).fillColor('black');
-    doc.text(fechaFormateada, 205 + doc.widthOfString('Fecha Receta: '), 256);
+    doc.text(fechaFormateada, 205 + doc.widthOfString('Fecha Receta: '), 148);
   
     //linea separadora
-    doc.rect(11, 280, 563, 2).fill('#C6C6C6');
+    doc.rect(11, 172, 563, 2).fill('#C6C6C6');
 
     //INDICACIONES
     // doc.font('Helvetica-Bold').fontSize(12).fillColor('black');
@@ -503,12 +486,12 @@ async createPdfIndicaciones(createPdfDto: CreatePdfDto):Promise<Buffer> {
     }
     function addIndications(doc: any, indications: string) {
       doc.font('Helvetica-Bold').fontSize(12).fillColor('black');
-      doc.text('Indicaciones: ', 16, 304);
+      doc.text('Indicaciones: ', 16, 196);
   
       const maxWidth = 563 - 20 - doc.widthOfString('Indicaciones: ');
       const lines = splitTextIntoLines(indications, maxWidth, 'Helvetica', 12, doc);
   
-      let yIndications = 304;
+      let yIndications = 196;
   
       doc.font('Helvetica').fontSize(12).fillColor('black');
       for (const line of lines) {
@@ -521,68 +504,69 @@ async createPdfIndicaciones(createPdfDto: CreatePdfDto):Promise<Buffer> {
 
 
     //linea separadora
-    doc.rect(11, 563, 563, 2).fill('#C6C6C6'); 
+    doc.rect(11, 455, 563, 2).fill('#C6C6C6'); 
 
     // Texto "Firmada"
     doc.font('Helvetica-Bold').fontSize(12).fillColor('black');
-    doc.text(`Firmada Electronicamente por:`, 16, 587);
+    doc.text(`Firmada Electronicamente por:`, 16, 479);
     
     // Texto "Dr/a"
     const doctorName = `${prescription.practitioner.lastName}, ${prescription.practitioner.name}`
     doc.font('Helvetica-Bold').fontSize(12).fillColor('black');
-    doc.text(`Dr/a:`, 16, 616);
+    doc.text(`Dr/a:`, 16, 508);
     doc.font('Helvetica').fontSize(12).fillColor('black');
-    doc.text(`${doctorName.toLocaleUpperCase()}`, 28 + doc.widthOfString('Dr/a'), 616);
+    doc.text(`${doctorName.toLocaleUpperCase()}`, 28 + doc.widthOfString('Dr/a'), 508);
 
     //matricula
     doc.font('Helvetica-Bold').fontSize(12).fillColor('black');
-    doc.text(`Matricula:`, 16, 636);
+    doc.text(`Matricula:`, 16, 528);
     doc.font('Helvetica').fontSize(12).fillColor('black');
-    doc.text(`${prescription.practitioner.license}`, 28 + doc.widthOfString('Matricula'), 636);
+    doc.text(`${prescription.practitioner.license}`, 28 + doc.widthOfString('Matricula'), 528);
 
     //Especialidad
     doc.font('Helvetica-Bold').fontSize(12).fillColor('black');
-    doc.text(`Especialidad:`, 16, 656);
+    doc.text(`Especialidad:`, 16, 548);
     doc.font('Helvetica').fontSize(12).fillColor('black');
-    doc.text(`${prescription.practitioner.specialities[0].name}`, 28 + doc.widthOfString('Especialidad'), 656);
+    doc.text(`${prescription.practitioner.specialities[0].name}`, 28 + doc.widthOfString('Especialidad'), 548);
 
     //Institucion
     doc.font('Helvetica-Bold').fontSize(12).fillColor('black');
-    doc.text(`Institucion:`, 16, 676);
+    doc.text(`Institucion:`, 16, 568);
     doc.font('Helvetica').fontSize(12).fillColor('black');
     //doc.text(`${prescription.practitioner.}`, 28 + doc.widthOfString('Institucion'), 740);
-    doc.text('OSEP', 28 + doc.widthOfString('Institucion'), 676);
+    doc.text('OSEP', 28 + doc.widthOfString('Institucion'), 568);
 
     //Direccion
     doc.font('Helvetica-Bold').fontSize(12).fillColor('black');
-    doc.text(`Direccion:`, 16, 696);
+    doc.text(`Direccion:`, 16, 588);
     doc.font('Helvetica').fontSize(12).fillColor('black');
     //doc.text(`${prescription.practitioner.institution}`, 28 + doc.widthOfString('Institucion'), 740);
-    doc.text('Suiza 678, Ciudad, Mendoza', 28 + doc.widthOfString('Direccion'), 696);
+    doc.text('Suiza 678, Ciudad, Mendoza', 28 + doc.widthOfString('Direccion'), 588);
 
     //TODO Codigo qr y frima electronica
-    doc.image(qrCodePath, 470, 610, { width: 90 })
+    doc.image(qrCodePath, 470, 502, { width: 90 })
+
 
     //texto centrado, receta validarse
     doc.font('Helvetica-Bold').fontSize(10).fillColor('#49454F');
-    doc.text(`Esta receta debe validarse on-line ingresando el número de recetario:`, 130, 726);
+    doc.text(`Esta receta debe validarse on-line ingresando el número de recetario:`, 130, 618);
 
     //Firma Electronica
     doc.font('Helvetica-Bold').fontSize(12).fillColor('black');
-    doc.text(`Firma electrónica `, 334, 616);
+    doc.text(`Firma electrónica `, 334, 508);
     doc.font('Helvetica').fontSize(10).fillColor('black');
-    doc.text(`La firma electrónica `, 334, 640);
-    doc.text(`sustituye legalmente `, 334, 655);
-    doc.text(`firma olografa `, 334, 670);
+    doc.text(`La firma electrónica `, 334, 532);
+    doc.text(`sustituye legalmente `, 334, 547);
+    doc.text(`firma olografa `, 334, 562);
     //QR Code
 
     //linea separadora
-    doc.rect(11, 756, 563, 2).fill('#C6C6C6'); 
+    doc.rect(11, 648, 563, 2).fill('#C6C6C6'); 
 
    //-------------------------------------------------------------------------- Sección datos del paciente
    
     let x = 16; // Inicializa la coordenada x (margen izquierdo)
-    let y = 776; // Inicializa la coordenada y
+    let y = 668; // Inicializa la coordenada y
     const lineHeight = 15; // Espacio entre líneas
     const marginRight = 16; // Margen derecho
 
@@ -685,12 +669,12 @@ async createPdfIndicaciones(createPdfDto: CreatePdfDto):Promise<Buffer> {
     addText(`${prescription.medicine_quantity}`, false, false);
 
      //linea separadora
-     doc.rect(201, 815, 173, 2).fill('#C6C6C6'); 
+     doc.rect(201, 707, 173, 2).fill('#C6C6C6'); 
 
     //Emicion receta
     doc.font('Helvetica').fontSize(10).fillColor('black');
-    doc.text(`Esta receta fue creada por un emisor inscripto y validado en el Registro de Recetarios Electrónicos del :`, 50, 840);
-    doc.text(`Ministerio de Salud de la Nación (Resolución RL-2024-91317760-APN-SSVEIYES#MS)`, 70, 860);
+    doc.text(`Esta receta fue creada por un emisor inscripto y validado en el Registro de Recetarios Electrónicos del :`, 50, 732);
+    doc.text(`Ministerio de Salud de la Nación (Resolución RL-2024-91317760-APN-SSVEIYES#MS)`, 70, 752);
 
     //ending pdf
     const buffer =[]
@@ -698,17 +682,7 @@ async createPdfIndicaciones(createPdfDto: CreatePdfDto):Promise<Buffer> {
       doc.on('end', () => {
         const data = Buffer.concat(buffer);
         resolve(data);
-
-        // Eliminar las imágenes aquí
-        // try {
-        //     fs.unlinkSync(join(process.cwd(), prescriptionBarCodeUrl));
-        //     fs.unlinkSync(join(process.cwd(), afiliadoBarCodeUrl));
-        //     fs.unlinkSync(join(process.cwd(), qrCodePath));
-        //     console.log('Imágenes eliminadas con éxito.');
-        // } catch (err) {
-        //     console.error('Error al eliminar las imágenes:', err);
-        // }
-      });
+    });
       
     doc.end()
   })
